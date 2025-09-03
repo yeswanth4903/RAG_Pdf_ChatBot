@@ -18,6 +18,7 @@ if not groq_api_key:
     st.error("❌ Missing GROQ_API_KEY. Set it in Streamlit secrets or in a local .env file.")
     st.stop()
 
+st.title("Chat With Yout PDF")
 uploaded_file = st.file_uploader("Upload PDF",type='pdf')
 
 if uploaded_file is not None:
@@ -50,10 +51,6 @@ if uploaded_file is not None:
             retriever = vector_store.as_retriever(),
             chain_type = "stuff"
         )
-
-        st.title("Chat With Yout PDF")
-
-
         query = st.text_input("Ask your query: ")
         if(query):
             ans = retriever.invoke(query)
