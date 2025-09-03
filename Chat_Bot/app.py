@@ -18,7 +18,7 @@ if not groq_api_key:
     st.error("❌ Missing GROQ_API_KEY. Set it in Streamlit secrets or in a local .env file.")
     st.stop()
 
-st.title("Chat With Yout PDF")
+st.title("Chat With Your PDF")
 uploaded_file = st.file_uploader("Upload PDF",type='pdf')
 
 if uploaded_file is not None:
