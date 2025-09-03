@@ -1,5 +1,5 @@
 #PDF ingestion
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import streamlit as st
 from langchain_groq import ChatGroq
