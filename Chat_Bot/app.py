@@ -79,7 +79,7 @@ if uploaded_file is not None:
         query = llm.invoke(
             prompt.format(
                 query = st.chat_input("Enter your query: "),
-                context="This is a PDF chatbot. Answer only from the document."
+                context=" ".join([doc.page_content for doc in chunks[:3]])
             )
         ).content
         if(query):
