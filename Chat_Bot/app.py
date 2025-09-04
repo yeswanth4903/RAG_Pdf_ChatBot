@@ -6,6 +6,8 @@ from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import tempfile
 import os
@@ -41,19 +43,53 @@ if uploaded_file is not None:
             embedding=emb
         )
 
-
-
-        #Retriever with RAG chain
+        #LLM
         llm = ChatGroq(model="gemma2-9b-it",temperature=0.2) 
 
+        #Memory
+        memory = ConversationBufferMemory(memory_key="chat_history" , return_messages=True)
+
+        #Retriever with RAG chain
         retriever = RetrievalQA.from_chain_type(
             llm=llm,
             retriever = vector_store.as_retriever(),
             chain_type = "stuff"
         )
-        query = st.text_input("Ask your query: ")
+
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []  
+
+        prompt = PromptTemplate(
+                input_variables=["query", "context"],
+                template="""
+            You are an intelligent assistant for a PDF chatbot. 
+            Your job is to validate user queries before searching the PDF.
+
+            Rules:
+            1. If the query is relevant to the provided PDF context, return a cleaned and well-structured version of the query.
+            2. If the query is irrelevant (e.g., asking about world news when PDF is about medicine), respond with: "This question is not related to the document."
+            3. If the query is vague, reframe it into a clearer query.
+
+            PDF context: {context}
+            User query: {query}
+
+            Final Validated Query (or response):
+            """
+        )
+
+        query = llm.invoke(
+            prompt.format(
+                query = st.text_input("Enter your query: "),
+                context="This is a PDF chatbot. Answer only from the document."
+            )
+        ).content
+
         if(query):
             ans = retriever.invoke(query)
+            st.session_state.chat_history.append(("You", query))
+            st.session_state.chat_history.append(("AI", ans['answer']))
             st.write("AI: ",ans['result'])
+        for role, msg in st.session_state.chat_history:
+            st.write(f"**{role}:** {msg}")
 else:
     print("Something went wrong,Please Upload Again!!")
