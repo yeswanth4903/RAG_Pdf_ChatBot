@@ -37,7 +37,7 @@ if uploaded_file is not None:
 
 
         #Embedding and vector_store
-        emb = HuggingFaceEmbeddings(model="all-MiniLM-L6-v2")
+        emb = HuggingFaceEmbeddings(model="all-MiniLM-L6-v2",model_kwargs={"device": "cpu"})
         vector_store = FAISS.from_documents(
             chunks,
             embedding=emb
