@@ -87,8 +87,8 @@ if uploaded_file is not None:
         if(query):
             ans = retriever.invoke(query)
             st.session_state.chat_history.append(("You", query))
-            st.session_state.chat_history.append(("AI", ans['answer']))
-            st.write("AI: ",ans['result'])
+            st.session_state.chat_history.append(("AI", ans))
+            st.write("AI: ",ans)
         for role, msg in st.session_state.chat_history:
             st.write(f"**{role}:** {msg}")
 else:
