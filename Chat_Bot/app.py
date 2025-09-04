@@ -37,7 +37,7 @@ if uploaded_file is not None:
 
 
         #Embedding and vector_store
-        emb = HuggingFaceEmbeddings(model="all-MiniLM-L6-v2",model_kwargs={"device": "cpu"})
+        emb = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2",model_kwargs={"device": "cpu"})
         vector_store = FAISS.from_documents(
             chunks,
             embedding=emb
@@ -76,19 +76,16 @@ if uploaded_file is not None:
             Final Validated Query (or response):
             """
         )
-
         query = llm.invoke(
             prompt.format(
-                query = st.text_input("Enter your query: "),
+                query = st.chat_input("Enter your query: "),
                 context="This is a PDF chatbot. Answer only from the document."
             )
         ).content
-
         if(query):
-            ans = retriever.invoke(query)
+            ans = retriever.invoke({'query':query})
             st.session_state.chat_history.append(("You", query))
-            st.session_state.chat_history.append(("AI", ans))
-            st.write("AI: ",ans)
+            st.session_state.chat_history.append(("AI", ans['result']))
         for role, msg in st.session_state.chat_history:
             st.write(f"**{role}:** {msg}")
 else:
