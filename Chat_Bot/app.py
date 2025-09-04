@@ -76,17 +76,34 @@ if uploaded_file is not None:
             Final Validated Query (or response):
             """
         )
-        query = llm.invoke(
-            prompt.format(
-                query = st.chat_input("Enter your query: "),
-                context=" ".join([doc.page_content for doc in chunks[:3]])
-            )
-        ).content
-        if(query):
-            ans = retriever.invoke({'query':query})
-            st.session_state.chat_history.append(("You", query))
-            st.session_state.chat_history.append(("AI", ans['result']))
-        for role, msg in st.session_state.chat_history:
-            st.write(f"**{role}:** {msg}")
+        user_query = st.chat_input("Enter your query: ")
+
+        if user_query:
+            # Step 1: Validation
+            pdf_context = " ".join([doc.page_content for doc in chunks[:3]])
+            validated = llm.invoke(
+                prompt.format(
+                    query=user_query,
+                    context=pdf_context
+                )
+            ).content
+        
+            # If validator rejects
+            if "not related" in validated.lower():
+                st.session_state.chat_history.append(("You", user_query))
+                st.session_state.chat_history.append(("AI", "This question is not related to the document."))
+                st.write("AI: This question is not related to the document.")
+            else:
+                # Step 2: Run through retriever
+                ans = retriever.invoke(validated)
+        
+                if not ans or ans["result"].strip() == "":
+                    response = "This document does not contain the answer to your question."
+                else:
+                    response = ans["result"]
+        
+                st.session_state.chat_history.append(("You", user_query))
+                st.session_state.chat_history.append(("AI", response))
+                st.write("AI: ", response)
 else:
     print("Something went wrong,Please Upload Again!!")
